@@ -202,7 +202,6 @@ class Products extends Component {
       this.setState({ loadingMore: true }, () => {
         this.fetchProducts(true);
       });
-      console.log('loading more');
     }
     if (this.isBottom(wrappedElement)) {
       document.removeEventListener('scroll', this.trackScrolling);
