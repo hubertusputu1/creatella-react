@@ -129,6 +129,7 @@ class Products extends Component {
 
   addMoreProducts = () => {
     document.addEventListener('scroll', this.trackScrolling);
+    this.fetchAds();
     this.setState(
       {
         loading: false,
@@ -154,21 +155,24 @@ class Products extends Component {
     axios.get(apiUrl).then(res => {
       this.setState({ page: this.state.page + 1 });
       const products = res.data;
+
       if (!isTemp) {
         document.addEventListener('scroll', this.trackScrolling);
         return this.setState({
           products,
-          loading: false
+          loading: false,
         });
       } else if (isTemp && !forceAdd) {
         return this.setState({ tempProducts: products, loadingMore: true });
       }
+
       document.addEventListener('scroll', this.trackScrolling);
+      this.fetchAds();
       return this.setState({
         products: this.state.products.concat(products),
         tempProducts: [],
         loadingMore: false,
-        loading: false
+        loading: false,
       });
     });
   };
