@@ -104,7 +104,8 @@ class Products extends Component {
       sort: 'id',
       products: [],
       tempProducts: [],
-      ads: '',
+      randomNumber: null,
+      loading: false,
       page: 0,
       open: false,
       anchorEl: null,
@@ -122,8 +123,11 @@ class Products extends Component {
   fetchProducts = (isTemp = false) => {
     const { page, sort } = this.state;
     const apiUrl = `${process.env.REACT_APP_API_HOST}/api/products?_page=${page}&_limit=20&_sort=${sort}`;
+    this.setState({ loading: true });
+
     axios.get(apiUrl).then(res => {
       console.log('ini res ', res.data);
+      this.setState({ loading: false });
       const products = res.data;
       if (!isTemp) {
         return this.setState({
@@ -134,8 +138,22 @@ class Products extends Component {
     });
   };
 
+  fetchAds = () => {
+    const { randomNumber } = this.state;
+    const max = 10;
+    let newRandomNumber = Math.floor(Math.random() * 1000);
+    newRandomNumber = (parseInt(newRandomNumber, 10) % max) + 1;
+    if (!randomNumber || randomNumber !== newRandomNumber) {
+      return this.setState({
+        randomNumber: newRandomNumber,
+      });
+    }
+    this.fetchAds();
+  };
+
   componentDidMount = () => {
     this.fetchProducts();
+    this.fetchAds();
   };
 
   renderLoader = classes => {
@@ -227,17 +245,24 @@ class Products extends Component {
     );
   };
 
+  renderLoading = () => {
+    return <p>LOADING.....</p>;
+  };
+
   render() {
-    const { products } = this.state;
+    const { products, loading, randomNumber } = this.state;
     const { classes } = this.props;
     return (
       <div className={classes.root}>
         {this.renderTopAppBar(classes)}
         <Toolbar />
-        <Ads />
+        <Ads randomNumber={randomNumber} />
         <div className={classes.products}>
           {products.length > 0 &&
-            products.map(product => <Item key={product.id} product={product} />)}
+            products.map(product => (
+              <Item key={product.id} product={product} />
+            ))}
+          {loading && this.renderLoading()}
         </div>
         {this.renderNavOptions()}
       </div>

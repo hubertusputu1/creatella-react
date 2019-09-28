@@ -10,22 +10,22 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function Ads() {
+export default function Ads(props) {
   const classes = useStyles();
-
+  const { randomNumber } = props;
   return (
     <div>
       <Paper className={classes.root}>
         <Typography variant="body1">
           Here you're sure to find a bargain on some of the finest ascii
           available to purchase. Be sure to peruse our selection of ascii faces
-          in an exciting range of sizes and prices. But first, a word from our
-          sponsors:
+          in an exciting range of sizes and prices.
+        </Typography>
+        <Typography variant="body2">
+          But first, a word from our sponsors:
         </Typography>
         <img
-          src={`${process.env.REACT_APP_API_HOST}/ads/?r=${Math.floor(
-            Math.random() * 1000
-          )}`}
+          src={`${process.env.REACT_APP_API_HOST}/ads/?r=${randomNumber}`}
           alt="ads"
         />
       </Paper>
