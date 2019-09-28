@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
 
 export default function Item(props) {
   const classes = useStyles();
-  const { date, face, price, size } = props.product;
+  const { date, face, price, size, id } = props.product;
   return (
     <div>
       <Paper className={classes.root}>
@@ -30,6 +30,7 @@ export default function Item(props) {
           {face}
         </Typography>
         <div className={classes.detail}>
+          <Typography variant="body1">id: ${id}</Typography>
           <Typography variant="body1">Price: ${price}</Typography>
           <Typography variant="body1">Size: {size}</Typography>
           <Typography variant="caption">{date}</Typography>

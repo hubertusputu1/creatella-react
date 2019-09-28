@@ -106,7 +106,9 @@ class Products extends Component {
       tempProducts: [],
       randomNumber: null,
       loading: false,
-      page: 0,
+      loadingMore: false,
+      isBottom: false,
+      page: 1,
       open: false,
       anchorEl: null,
     };
@@ -117,24 +119,57 @@ class Products extends Component {
   };
 
   handleClose = sort => {
-    this.setState({ open: false, anchorEl: null, sort });
+    this.setState(
+      { open: false, anchorEl: null, sort, loading: true, products: [] },
+      () => {
+        this.fetchProducts();
+      }
+    );
   };
 
-  fetchProducts = (isTemp = false) => {
-    const { page, sort } = this.state;
-    const apiUrl = `${process.env.REACT_APP_API_HOST}/api/products?_page=${page}&_limit=20&_sort=${sort}`;
-    this.setState({ loading: true });
-
-    axios.get(apiUrl).then(res => {
-      console.log('ini res ', res.data);
-      this.setState({ loading: false });
-      const products = res.data;
-      if (!isTemp) {
-        return this.setState({
-          products,
+  addMoreProducts = () => {
+    document.addEventListener('scroll', this.trackScrolling);
+    this.setState(
+      {
+        loading: false,
+        loadingMore: false,
+        products: this.state.products.concat(this.state.tempProducts),
+      },
+      () => {
+        this.setState({
+          tempProducts: [],
         });
       }
-      this.setState({ tempProducts: products });
+    );
+  };
+
+  fetchProducts = (isTemp = false, forceAdd = false) => {
+    if (this.state.products.length === 320) {
+      document.removeEventListener('scroll', this.trackScrolling);
+      return;
+    }
+    const { page, sort } = this.state;
+    const apiUrl = `${process.env.REACT_APP_API_HOST}/api/products?_page=${page}&_limit=20&_sort=${sort}`;
+
+    axios.get(apiUrl).then(res => {
+      this.setState({ page: this.state.page + 1 });
+      const products = res.data;
+      if (!isTemp) {
+        document.addEventListener('scroll', this.trackScrolling);
+        return this.setState({
+          products,
+          loading: false
+        });
+      } else if (isTemp && !forceAdd) {
+        return this.setState({ tempProducts: products, loadingMore: true });
+      }
+      document.addEventListener('scroll', this.trackScrolling);
+      return this.setState({
+        products: this.state.products.concat(products),
+        tempProducts: [],
+        loadingMore: false,
+        loading: false
+      });
     });
   };
 
@@ -152,8 +187,41 @@ class Products extends Component {
   };
 
   componentDidMount = () => {
+    this.setState({ loading: true });
     this.fetchProducts();
     this.fetchAds();
+  };
+
+  componentWillUnmount() {
+    document.removeEventListener('scroll', this.trackScrolling);
+  }
+
+  trackScrolling = () => {
+    const wrappedElement = document.getElementById('products');
+    if (this.isLoadMore(wrappedElement) && !this.state.loadingMore) {
+      this.setState({ loadingMore: true }, () => {
+        this.fetchProducts(true);
+      });
+      console.log('loading more');
+    }
+    if (this.isBottom(wrappedElement)) {
+      document.removeEventListener('scroll', this.trackScrolling);
+      this.setState({ loading: true, isBottom: true }, () => {
+        if (this.state.tempProducts.length === 0) {
+          return this.fetchProducts(true, true);
+        }
+        this.addMoreProducts();
+      });
+    }
+  };
+
+  isLoadMore = el => {
+    const height = el.clientHeight / 2;
+    return el.getBoundingClientRect().bottom <= height;
+  };
+
+  isBottom = el => {
+    return el.getBoundingClientRect().bottom <= window.innerHeight;
   };
 
   renderLoader = classes => {
@@ -246,7 +314,11 @@ class Products extends Component {
   };
 
   renderLoading = () => {
-    return <p>LOADING.....</p>;
+    return <Typography variant="h6">Loading Products...</Typography>;
+  };
+
+  renderEndCatalogue = () => {
+    return <Typography variant="h6">~ End Of Catalogue ~</Typography>;
   };
 
   render() {
@@ -257,12 +329,13 @@ class Products extends Component {
         {this.renderTopAppBar(classes)}
         <Toolbar />
         <Ads randomNumber={randomNumber} />
-        <div className={classes.products}>
+        <div id="products" className={classes.products}>
           {products.length > 0 &&
             products.map(product => (
               <Item key={product.id} product={product} />
             ))}
           {loading && this.renderLoading()}
+          {products.length === 320 && this.renderEndCatalogue()}
         </div>
         {this.renderNavOptions()}
       </div>
