@@ -7,7 +7,16 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     marginTop: 10,
     width: '100%',
-    height: 100
+    height: 100,
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: '0px 10px 0px 10px',
+  },
+  detail: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end'
   },
 }));
 
@@ -20,6 +29,11 @@ export default function Item(props) {
         <Typography variant="h4" color="secondary">
           {face}
         </Typography>
+        <div className={classes.detail}>
+          <Typography variant="body1">Price: ${price}</Typography>
+          <Typography variant="body1">Size: {size}</Typography>
+          <Typography variant="caption">{date}</Typography>
+        </div>
       </Paper>
     </div>
   );
