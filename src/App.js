@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Products from './components/products';
 
 import {
   MuiThemeProvider,
@@ -18,7 +19,7 @@ class App extends Component {
     return (
       <MuiThemeProvider theme={theme}>
         <CssBaseline>
-          <p>first</p>
+          <Products />
         </CssBaseline>
       </MuiThemeProvider>
     );
