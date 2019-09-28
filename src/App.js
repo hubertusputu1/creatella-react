@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 
 import {
   MuiThemeProvider,
@@ -26,11 +25,4 @@ class App extends Component {
   }
 }
 
-export default connect(
-  state => {
-    return {};
-  },
-  dispatchEvent => {
-    return {};
-  }
-)(App);
+export default App;
