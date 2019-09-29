@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Typography } from '@material-ui/core';
 
 import FormatPrice from '../../utils/formatPrice';
+import FormatDate from '../../utils/formatDate';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -37,7 +38,7 @@ export default function Item(props) {
           </Typography>
           <Typography variant="body2">Price: ${FormatPrice(price)}</Typography>
         </div>
-        <Typography variant="caption">{date}</Typography>
+        <Typography variant="caption">{FormatDate(date)}</Typography>
       </Paper>
     </div>
   );
