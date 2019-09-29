@@ -6,7 +6,6 @@ import {
   Toolbar,
   IconButton,
   Typography,
-  Paper,
   useScrollTrigger,
   Slide,
   MenuItem,
