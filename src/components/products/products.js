@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import ContentLoader from 'react-content-loader';
 import { withStyles } from '@material-ui/core/styles';
 import axios from 'axios';
 import {
@@ -10,11 +9,9 @@ import {
   Paper,
   useScrollTrigger,
   Slide,
-  Button,
-  TextField,
   MenuItem,
-  Grid,
   Menu,
+  CircularProgress,
 } from '@material-ui/core';
 import { Sort } from '@material-ui/icons';
 
@@ -70,21 +67,6 @@ const styles = theme => ({
   },
 });
 
-const ProductLoader = () => (
-  <ContentLoader
-    height={160}
-    width={400}
-    speed={2}
-    primaryColor="#f3f3f3"
-    secondaryColor="#ecebeb"
-  >
-    <rect x="46" y="28" rx="0" ry="0" width="0" height="0" />
-    <rect x="8" y="4" rx="0" ry="0" width="383" height="59" />
-    <rect x="8" y="79" rx="0" ry="0" width="383" height="34" />
-    <rect x="41" y="85" rx="0" ry="0" width="0" height="18" />
-  </ContentLoader>
-);
-
 const HideOnScroll = props => {
   const { children, window } = props;
   const trigger = useScrollTrigger({ target: window ? window() : undefined });
@@ -108,6 +90,7 @@ class Products extends Component {
       loading: false,
       loadingMore: false,
       isBottom: false,
+      isEnd: false,
       page: 1,
       open: false,
       anchorEl: null,
@@ -145,14 +128,14 @@ class Products extends Component {
   };
 
   fetchProducts = (isTemp = false, forceAdd = false) => {
-    if (this.state.products.length === 320) {
-      document.removeEventListener('scroll', this.trackScrolling);
-      return;
-    }
     const { page, sort } = this.state;
     const apiUrl = `${process.env.REACT_APP_API_HOST}/api/products?_page=${page}&_limit=20&_sort=${sort}`;
 
     axios.get(apiUrl).then(res => {
+      if (res.data.length === 0) {
+        this.setState({ isEnd: true });
+        return document.removeEventListener('scroll', this.trackScrolling);
+      }
       this.setState({ page: this.state.page + 1 });
       const products = res.data;
 
@@ -227,34 +210,6 @@ class Products extends Component {
     return el.getBoundingClientRect().bottom <= window.innerHeight;
   };
 
-  renderLoader = classes => {
-    return (
-      <div style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Paper className={classes.loader}>
-          <ProductLoader />
-        </Paper>
-        <Paper className={classes.loader}>
-          <ProductLoader />
-        </Paper>
-        <Paper className={classes.loader}>
-          <ProductLoader />
-        </Paper>
-        <Paper className={classes.loader}>
-          <ProductLoader />
-        </Paper>
-        <Paper className={classes.loader}>
-          <ProductLoader />
-        </Paper>
-        <Paper className={classes.loader}>
-          <ProductLoader />
-        </Paper>
-        <Paper className={classes.loader}>
-          <ProductLoader />
-        </Paper>
-      </div>
-    );
-  };
-
   renderTopAppBar = classes => {
     return (
       <HideOnScroll {...this.props}>
@@ -317,15 +272,33 @@ class Products extends Component {
   };
 
   renderLoading = () => {
-    return <Typography variant="h6">Loading Products...</Typography>;
+    return (
+      <div
+        style={{
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 10,
+        }}
+      >
+        <CircularProgress className={this.props.classes.progress} />
+        <Typography variant="h6">Loading Products...</Typography>
+      </div>
+    );
   };
 
   renderEndCatalogue = () => {
-    return <Typography variant="h6">~ End Of Catalogue ~</Typography>;
+    return (
+      <Typography variant="h6" style={{ textAlign: 'center', padding: 10 }}>
+        ~ End Of Catalogue ~
+      </Typography>
+    );
   };
 
   render() {
-    const { products, loading, randomNumber } = this.state;
+    const { products, loading, randomNumber, isEnd } = this.state;
     const { classes } = this.props;
     return (
       <div className={classes.root}>
@@ -338,7 +311,7 @@ class Products extends Component {
               <Item key={product.id} product={product} />
             ))}
           {loading && this.renderLoading()}
-          {products.length === 320 && this.renderEndCatalogue()}
+          {isEnd && this.renderEndCatalogue()}
         </div>
         {this.renderNavOptions()}
       </div>
